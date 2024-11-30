@@ -1,0 +1,53 @@
+:root {
+    --main-bg: #F5F5F5;
+    --heading-bg: #9B1B30;
+    --heading-txt: #FFFFFF;
+    --foreground: #2D3C2E;
+    --highlight: #005B3C;
+}
+
+body {
+    background-color: var(--main-bg);
+    font-family: "Merriweather", serif;
+    color: var(--foreground); /* Default text color */
+}
+
+h1 {
+    background-color: var(--heading-bg);
+    color: var(--heading-txt);
+    padding: 10px 20px;
+    margin: 10px 0;
+    border-radius: 5px; /* Optional: adds some soft edges to the heading background */
+}
+h2, h3 {
+    color: #2D3C2E;
+    padding: 10px 20px;
+    margin: 10px 0;
+    border-radius: 5px; /* Optional: adds some soft edges to the heading background */
+}
+
+a {
+    color: var(--highlight);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+button {
+    background-color: var(--highlight);
+    color: var(--heading-txt);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: var(--heading-bg);
+}
+
+p, li {
+    color: var(--foreground); /* Dark green for body text, warm and easy to read */
+}

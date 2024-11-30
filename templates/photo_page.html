@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/stylesheet.css') }}">
+  <style>
+    /* Styles for the carousel */
+    .carousel-container {
+      width: 80%;
+      margin: 30px auto;
+      overflow: hidden;
+      border-radius: 10px;
+    }
+
+    .carousel {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .carousel img {
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    .carousel-button {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      font-size: 2em;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .carousel-button.left {
+      left: 10px;
+    }
+
+    .carousel-button.right {
+      right: 10px;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #F4F4F9;
+      color: #333333;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    h1 {
+      color: #F7F4F1;
+      font-size: 3.5em;
+      margin-top: 20px;
+    }
+
+    h2 {
+      color: #16a085;
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+
+    .form-container {
+      background-color: #fff;
+      padding: 30px;
+      margin: 30px auto;
+      width: 70%;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    input[type="submit"] {
+      background-color: #3C6E47;
+      color: white;
+      font-size: 1.1em;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #34495e;
+    }
+
+    .back-link {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+
+    .back-link a {
+      color: #16a085;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Christmas Photo Upload</h1>
+  <h2>Upload your favorite Christmas photos to share with everyone!</h2>
+
+  <div class="form-container">
+    <form method="POST" enctype="multipart/form-data">
+      <label for="photo">Choose a photo to upload:</label>
+      <input type="file" id="photo" name="photo" accept="image/*" required>
+      <input type="submit" value="Upload Photo">
+    </form>
+  </div>
+
+  <!-- Carousel Section -->
+  <!-- Carousel Section -->
+<div class="carousel-container">
+    <div class="carousel">
+      {% for photo in photos %}
+        <div class="carousel-item">
+          <img src="{{ url_for('uploaded_image', filename=photo) }}" alt="{{ photo }}">
+          <p>{{ photo }}</p> <!-- Display photo name below the image -->
+        </div>
+      {% endfor %}
+    </div>
+    <button class="carousel-button left">&#10094;</button>
+    <button class="carousel-button right">&#10095;</button>
+  </div>
+  
+
+  <div class="back-link">
+    <a href="/">Back to Homepage</a>
+  </div>
+
+  <script>
+    // Carousel functionality (move left and right)
+    let currentIndex = 0;
+    const images = document.querySelectorAll('.carousel img');
+    const totalImages = images.length;
+
+    function updateCarousel() {
+      const carousel = document.querySelector('.carousel');
+      carousel.style.transform = `translateX(-${currentIndex * 100}%)`;
+    }
+
+    document.querySelector('.carousel-button.left').addEventListener('click', () => {
+      currentIndex = (currentIndex === 0) ? totalImages - 1 : currentIndex - 1;
+      updateCarousel();
+    });
+
+    document.querySelector('.carousel-button.right').addEventListener('click', () => {
+      currentIndex = (currentIndex === totalImages - 1) ? 0 : currentIndex + 1;
+      updateCarousel();
+    });
+  </script>
+
+</body>
+</html>

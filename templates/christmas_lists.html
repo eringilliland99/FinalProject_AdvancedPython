@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Christmas Lists Upload</title>
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/stylesheet.css') }}">
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #F4F4F9; /* Soft gray background */
+      color: #333333; /* Text color */
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    h1 {
+      color: #3C6E47; /* Hunter green */
+      font-size: 3.5em;
+      margin-top: 20px;
+    }
+
+    h2 {
+      color: #16a085; /* Teal green */
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+
+    .form-container {
+      background-color: #fff;
+      padding: 30px;
+      margin: 30px auto;
+      width: 70%;
+      max-width: 600px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    input[type="submit"] {
+      background-color: #3C6E47; /* Hunter green */
+      color: white;
+      font-size: 1.1em;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #2E5436; /* Darker green */
+    }
+
+    .back-link {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+
+    .back-link a {
+      color: #16a085; /* Teal green */
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+
+    .uploaded-lists {
+      margin-top: 30px;
+      text-align: left;
+    }
+
+    .uploaded-lists ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    .uploaded-lists li {
+      background-color: #f1f1f1;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .styled-table {
+      width: 100%;
+      margin: 0 auto;
+      border-collapse: collapse;
+    }
+
+    .styled-table th, .styled-table td {
+      padding: 10px;
+      text-align: center;
+      border: 1px solid #ddd;
+    }
+
+    .styled-table th {
+      background-color: #3C6E47;
+      color: white;
+    }
+
+    .action-link {
+      margin: 0 10px;
+      text-decoration: none;
+      font-weight: bold;
+      color: #16a085;
+    }
+
+    .delete-link {
+      color: #e74c3c; /* Red for delete */
+    }
+
+    .delete-link:hover {
+      text-decoration: underline;
+    }
+
+    .update-link {
+      color: #f39c12; /* Yellow for update */
+    }
+
+    .update-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <h1>Christmas Lists Upload</h1>
+  <h2>Upload your Christmas list here for everyone to see!</h2>
+
+  <div class="form-container">
+    <form action="{{ url_for('christmas_lists') }}" method="POST" enctype="multipart/form-data">
+      <label for="file">Choose your Christmas List Document (PDF, DOCX, TXT):</label>
+      <input type="file" id="file" name="file" accept=".pdf,.docx,.txt" required>
+      
+      <input type="submit" value="Upload List">
+    </form>
+  </div>
+  
+  <div class="uploaded-lists">
+    <h2>Uploaded Christmas Lists</h2>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Filename</th>
+          <th>Date Uploaded</th>
+          <th>Download</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for list in lists %}
+        <tr>
+          <td>{{ list.filename }}</td>
+          <td>{{ list.date_uploaded.date() }}</td>
+          <td>
+            <a href="{{ url_for('uploaded_file', filename=list.filename) }}" download>Download</a>
+          </td>          
+          <td>
+            <a href="/christmas_lists/delete/{{ list.id }}" class="action-link delete-link">Delete</a>
+            <a href="/christmas_lists/update/{{ list.id }}" class="action-link update-link">Update</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="back-link">
+    <a href="/">Back to Homepage</a>
+  </div>
+</body>
+</html>

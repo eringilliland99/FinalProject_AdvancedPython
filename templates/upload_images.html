@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/stylesheet.css') }}">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: #F4F4F9; /* Soft gray background */
+      color: #333333; /* Text color */
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    h1 {
+      color: #F7F4F1; /* Soft cream color for header text */
+      font-size: 3.5em;
+      margin-top: 20px;
+    }
+
+    h2 {
+      color: #16a085; /* Teal green accent color */
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+
+    .form-container {
+      background-color: #fff;
+      padding: 30px;
+      margin: 30px auto;
+      width: 70%;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      width: 100%;
+      margin-bottom: 20px;
+    }
+
+    input[type="submit"] {
+      background-color: #3C6E47; /* Hunter Green */
+      color: white;
+      font-size: 1.1em;
+      padding: 12px 25px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #34495e;
+    }
+
+    .back-link {
+      margin-top: 20px;
+      font-size: 1.2em;
+    }
+
+    .back-link a {
+      color: #16a085; /* Teal green */
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .back-link a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Upload Your Christmas Photos</h1>
+  <h2>Share your favorite Christmas moments!</h2>
+
+  <div class="form-container">
+    <form method="POST" enctype="multipart/form-data">
+      <label for="photo">Choose a photo to upload:</label>
+      <input type="file" id="photo" name="photo" accept="image/*" required>
+      <input type="submit" value="Upload Photo">
+    </form>
+  </div>
+
+  <div class="back-link">
+    <a href="/">Back to Homepage</a>
+  </div>
+
+  <!-- Bootstrap JS (needed for carousel functionality) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
