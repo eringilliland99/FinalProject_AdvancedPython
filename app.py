@@ -71,26 +71,36 @@ def home():
 @app.route('/food_database', methods=['POST', 'GET'])
 def food_database():
     if request.method == 'POST':
-        # Retrieving data from form
+        # Adding a new dish to the database
         contributor = request.form['contributor']
         item_name = request.form['item_name']
         description = request.form['description']
 
-        # Create new dish object
         new_dish = Dish(contributor=contributor, item_name=item_name, description=description)
 
         try:
             db.session.add(new_dish)
             db.session.commit()
-            # Redirect to the same page after form submission
             return redirect(url_for('food_database'))
         except:
             return 'There was an issue adding your dish.'
-
     else:
-        # Retrieve all dishes from the database and order by creation date
-        dishes = Dish.query.order_by(Dish.date_created).all()
-        return render_template('food_database.html', dishes=dishes)
+        # Handle search functionality
+        search_query = request.args.get('search', '').strip()
+        
+        # If a search query is provided, filter dishes by it
+        if search_query:
+            dishes = Dish.query.filter(
+                (Dish.contributor.ilike(f"%{search_query}%")) |
+                (Dish.item_name.ilike(f"%{search_query}%")) |
+                (Dish.description.ilike(f"%{search_query}%"))
+            ).order_by(Dish.date_created).all()
+        else:
+            # Retrieve all dishes if no search query is provided
+            dishes = Dish.query.order_by(Dish.date_created).all()
+
+        return render_template('food_database.html', dishes=dishes, search_query=search_query)
+
 
 
 @app.route('/delete/<int:id>')
@@ -232,6 +242,7 @@ def photo_page():
 @app.route('/uploads/docs/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 @app.route('/uploads/images/<filename>')
 def uploaded_image(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER_IMAGES'], filename)

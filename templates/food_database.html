@@ -103,12 +103,62 @@
             margin-top: 20px;
             color: #e74c3c;
         }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-bar form {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .search-bar input[type="text"] {
+            width: 60%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .search-bar button {
+            padding: 10px 15px;
+            background-color: #3C6E47;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .search-bar button:hover {
+            background-color: #34495e;
+        }
+
+        .home-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .home-link a {
+            color: #3C6E47;
+        }
     </style>
 {% endblock %}
 
 {% block body %}
 <div class="content">
     <h1>Food Sign-ups</h1>
+
+    <!-- Search Bar -->
+    <div class="search-bar">
+        <form method="GET" action="/food_database">
+            <input type="text" name="search" placeholder="Search for a dish, contributor, or description..." value="{{ search_query }}">
+            <button type="submit">Search</button>
+        </form>
+    </div>
+
     {% if dishes|length < 1 %}
         <h4>Congrats! You're the first one here.</h4>
     {% else %}
