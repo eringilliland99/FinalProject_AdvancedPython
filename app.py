@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 ## Create instance of Flash class (WSGI application)
 # Add app configurations
 UPLOAD_FOLDER_DOCS = '/home/ec2-user/FinalProject_AdvancedPython/uploads/docs'
-UPLOAD_FOLDER_IMAGES = '/home/ec2-user/FinalProject_AdvancedPython/uploads/images
+UPLOAD_FOLDER_IMAGES = '/home/ec2-user/FinalProject_AdvancedPython/uploads/images'
 '
 ALLOWED_EXTENSIONS= {'pdf', 'docx', 'txt'}
 ALLOWED_EXTENSIONS_IMAGES = {'png', 'jpg', 'jpeg', 'gif'}
