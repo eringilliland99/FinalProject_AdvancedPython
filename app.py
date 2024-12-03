@@ -12,14 +12,22 @@ from werkzeug.utils import secure_filename
 # set up application
 ## Create instance of Flash class (WSGI application)
 # Add app configurations
-UPLOAD_FOLDER = 'uploads/docs'
+UPLOAD_FOLDER_DOCS = 'uploads/docs'
 UPLOAD_FOLDER_IMAGES = 'uploads/images'
 ALLOWED_EXTENSIONS= {'pdf', 'docx', 'txt'}
 ALLOWED_EXTENSIONS_IMAGES = {'png', 'jpg', 'jpeg', 'gif'}
 
+# Ensure directories exist
+os.makedirs(UPLOAD_FOLDER_DOCS, exist_ok=True)
+os.makedirs(UPLOAD_FOLDER_IMAGES, exist_ok=True)
+
+# Helper function to check allowed extensions
+def allowed_file(filename, allowed_extensions):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
 ### Name sets root path for the application, important for locating template and static files.
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER_DOCS'] = UPLOAD_FOLDER_DOCS
 app.config['UPLOAD_FOLDER_IMAGES'] = UPLOAD_FOLDER_IMAGES
 app.config['SECRET_KEY'] = os.urandom(24)
 # Config = attribute to configure
@@ -71,36 +79,26 @@ def home():
 @app.route('/food_database', methods=['POST', 'GET'])
 def food_database():
     if request.method == 'POST':
-        # Adding a new dish to the database
+        # Retrieving data from form
         contributor = request.form['contributor']
         item_name = request.form['item_name']
         description = request.form['description']
 
+        # Create new dish object
         new_dish = Dish(contributor=contributor, item_name=item_name, description=description)
 
         try:
             db.session.add(new_dish)
             db.session.commit()
+            # Redirect to the same page after form submission
             return redirect(url_for('food_database'))
         except:
             return 'There was an issue adding your dish.'
+
     else:
-        # Handle search functionality
-        search_query = request.args.get('search', '').strip()
-        
-        # If a search query is provided, filter dishes by it
-        if search_query:
-            dishes = Dish.query.filter(
-                (Dish.contributor.ilike(f"%{search_query}%")) |
-                (Dish.item_name.ilike(f"%{search_query}%")) |
-                (Dish.description.ilike(f"%{search_query}%"))
-            ).order_by(Dish.date_created).all()
-        else:
-            # Retrieve all dishes if no search query is provided
-            dishes = Dish.query.order_by(Dish.date_created).all()
-
-        return render_template('food_database.html', dishes=dishes, search_query=search_query)
-
+        # Retrieve all dishes from the database and order by creation date
+        dishes = Dish.query.order_by(Dish.date_created).all()
+        return render_template('food_database.html', dishes=dishes)
 
 
 @app.route('/delete/<int:id>')
@@ -137,77 +135,90 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
 @app.route('/christmas_lists', methods=['GET', 'POST'])
+@app.route('/christmas_lists', methods=['GET', 'POST'])
 def christmas_lists():
     if request.method == 'POST':
-        # Handle file upload for Christmas lists
         if 'file' not in request.files:
-            flash('No file part in the request')
+            flash('No file part in the request.')
             return redirect(request.url)
-        
+
         file = request.files['file']
-        # If the user does not select file, send in an empty file name
         if file.filename == '':
-            flash('No selected file')
+            flash('No selected file.')
             return redirect(request.url)
-        
+
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            
-            # Save file information to database
-            new_list = ChristmasList(filename=filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER_DOCS'], filename))
+
+            # Save file info to the database
+            new_list = ChristmasList(filename=filename, date_uploaded=datetime.utcnow())
             db.session.add(new_list)
             db.session.commit()
+
             flash(f"File '{filename}' uploaded successfully!")
             return redirect(url_for('christmas_lists'))
-        
+
         flash('File type not allowed.')
         return redirect(request.url)
-    
-    christmas_lists = ChristmasList.query.all()
+
+    # Fetch all Christmas lists from the database
+    christmas_lists = ChristmasList.query.order_by(ChristmasList.date_uploaded.desc()).all()
     return render_template('christmas_lists.html', lists=christmas_lists)
+
 #######################
 # Update christmas lists
-#######################
 @app.route('/christmas_lists/update/<int:id>', methods=['GET', 'POST'])
 def update_lists(id):
     list_to_update = ChristmasList.query.get_or_404(id)
 
     if request.method == 'POST':
-        file = request.files['file']
-        
-        if file and allowed_file(file.filename):
-            # Secure the filename
-            filename = secure_filename(file.filename)
-            
-            # Save the file to the uploads folder
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        if 'file' not in request.files:
+            flash('No file part in the request.')
+            return redirect(request.url)
 
-            # Update the Christmas list with the new filename and current date
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            # Secure and save the new file
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER_DOCS'], filename))
+
+            # Update the database entry
             list_to_update.filename = filename
-            list_to_update.date_uploaded = datetime.utcnow()  # Update the upload date to current time
+            list_to_update.date_uploaded = datetime.utcnow()
 
             try:
                 db.session.commit()
                 flash(f"Christmas List '{list_to_update.filename}' updated successfully!")
                 return redirect(url_for('christmas_lists'))
-            except:
+            except Exception as e:
                 flash("There was an issue updating the Christmas list.")
+                app.logger.error(f"Update Error: {e}")
                 return redirect(url_for('christmas_lists'))
-        
+
         flash('Invalid file type. Only pdf, docx, and txt files are allowed.')
         return redirect(request.url)
 
     return render_template('update_christmas_lists.html', list=list_to_update)
-@app.route('/christmas_lists/delete/<int:id>', methods=['GET', 'POST'])
+
+@app.route('/christmas_lists/delete/<int:id>', methods=['POST'])
 def delete_christmas_list(id):
     list_to_delete = ChristmasList.query.get_or_404(id)
     try:
+        # Delete the file from the filesystem
+        file_path = os.path.join(app.config['UPLOAD_FOLDER_DOCS'], list_to_delete.filename)
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
+        # Delete the database entry
         db.session.delete(list_to_delete)
         db.session.commit()
-        return redirect('/christmas_lists')
-    except:
-        return 'There was a problem deleting that list. Call Erin at (xxx)-xxx-xxxx'
+        flash(f"Christmas List '{list_to_delete.filename}' deleted successfully!")
+        return redirect(url_for('christmas_lists'))
+    except Exception as e:
+        flash("There was a problem deleting that list.")
+        app.logger.error(f"Delete Error: {e}")
+        return redirect(url_for('christmas_lists'))
 
 
 # Function to check allowed file extensions
@@ -241,8 +252,7 @@ def photo_page():
 
 @app.route('/uploads/docs/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
-
+    return send_from_directory(app.config['UPLOAD_FOLDER_DOCS'], filename)
 @app.route('/uploads/images/<filename>')
 def uploaded_image(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER_IMAGES'], filename)
