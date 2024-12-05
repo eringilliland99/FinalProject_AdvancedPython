@@ -12,8 +12,8 @@ from werkzeug.utils import secure_filename
 # set up application
 ## Create instance of Flash class (WSGI application)
 # Add app configurations
-UPLOAD_FOLDER_DOCS = "/home/ec2-user/FinalProject_AdvancedPython/uploads/docs"
-UPLOAD_FOLDER_IMAGES = "/home/ec2-user/FinalProject_AdvancedPython/uploads/images"
+UPLOAD_FOLDER_DOCS = 'uploads/docs'
+UPLOAD_FOLDER_IMAGES = 'uploads/images'
 ALLOWED_EXTENSIONS= {'pdf', 'docx', 'txt'}
 ALLOWED_EXTENSIONS_IMAGES = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -129,97 +129,24 @@ def update(id):
         return render_template('update.html', dish=dish)
 
 #############
-# Lists
+# Graph!
 #############
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+@app.route('/pie', methods=['GET'])
+def pie():
+    contributions = db.session.query(Dish.contributor, db.func.count(Dish.id).label('count')).group_by(Dish.contributor).all()
+    # Convert to dictionary
+    pie_data = {contributor or 'Unknown': count for contributor, count in contributions}
+    
+    if not pie_data:  # If pie_data is empty
+        return render_template('pie.html', data=None)
 
-@app.route('/christmas_lists', methods=['GET', 'POST'])
-@app.route('/christmas_lists', methods=['GET', 'POST'])
-def christmas_lists():
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            flash('No file part in the request.')
-            return redirect(request.url)
+    return render_template('pie.html', data=pie_data)
 
-        file = request.files['file']
-        if file.filename == '':
-            flash('No selected file.')
-            return redirect(request.url)
 
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER_DOCS'], filename))
 
-            # Save file info to the database
-            new_list = ChristmasList(filename=filename, date_uploaded=datetime.utcnow())
-            db.session.add(new_list)
-            db.session.commit()
-
-            flash(f"File '{filename}' uploaded successfully!")
-            return redirect(url_for('christmas_lists'))
-
-        flash('File type not allowed.')
-        return redirect(request.url)
-
-    # Fetch all Christmas lists from the database
-    christmas_lists = ChristmasList.query.order_by(ChristmasList.date_uploaded.desc()).all()
-    return render_template('christmas_lists.html', lists=christmas_lists)
-
-#######################
-# Update christmas lists
-@app.route('/christmas_lists/update/<int:id>', methods=['GET', 'POST'])
-def update_lists(id):
-    list_to_update = ChristmasList.query.get_or_404(id)
-
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            flash('No file part in the request.')
-            return redirect(request.url)
-
-        file = request.files['file']
-        if file and allowed_file(file.filename):
-            # Secure and save the new file
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER_DOCS'], filename))
-
-            # Update the database entry
-            list_to_update.filename = filename
-            list_to_update.date_uploaded = datetime.utcnow()
-
-            try:
-                db.session.commit()
-                flash(f"Christmas List '{list_to_update.filename}' updated successfully!")
-                return redirect(url_for('christmas_lists'))
-            except Exception as e:
-                flash("There was an issue updating the Christmas list.")
-                app.logger.error(f"Update Error: {e}")
-                return redirect(url_for('christmas_lists'))
-
-        flash('Invalid file type. Only pdf, docx, and txt files are allowed.')
-        return redirect(request.url)
-
-    return render_template('update_christmas_lists.html', list=list_to_update)
-
-@app.route('/christmas_lists/delete/<int:id>', methods=['POST'])
-def delete_christmas_list(id):
-    list_to_delete = ChristmasList.query.get_or_404(id)
-    try:
-        # Delete the file from the filesystem
-        file_path = os.path.join(app.config['UPLOAD_FOLDER_DOCS'], list_to_delete.filename)
-        if os.path.exists(file_path):
-            os.remove(file_path)
-
-        # Delete the database entry
-        db.session.delete(list_to_delete)
-        db.session.commit()
-        flash(f"Christmas List '{list_to_delete.filename}' deleted successfully!")
-        return redirect(url_for('christmas_lists'))
-    except Exception as e:
-        flash("There was a problem deleting that list.")
-        app.logger.error(f"Delete Error: {e}")
-        return redirect(url_for('christmas_lists'))
-
+#############
+# Photos
+#############
 
 # Function to check allowed file extensions
 def allowed_file(filename):
